@@ -4,7 +4,7 @@ An intelligent, AI-powered language learning platform that combines Azure Commun
 
 ## 🎞️ Demo Shots
 
-https://github.com/user-attachments/assets/61def2b5-9411-4005-b772-33d43988757c
+https://github.com/user-attachments/assets/2bc8a63f-1a0e-41b5-a736-8a9263e259e7
 
 ![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet)
 ![Azure](https://img.shields.io/badge/Azure-Cloud-0078D4?logo=microsoft-azure)
