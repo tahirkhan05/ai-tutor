@@ -2,6 +2,10 @@
 
 An intelligent, AI-powered language learning platform that combines Azure Communication Services, Azure Cognitive Services, and Google Gemini AI to provide an immersive, interactive video-based learning experience.
 
+## 🎞️ Demo Shots
+
+https://github.com/user-attachments/assets/61def2b5-9411-4005-b772-33d43988757c
+
 ![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet)
 ![Azure](https://img.shields.io/badge/Azure-Cloud-0078D4?logo=microsoft-azure)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -240,37 +244,6 @@ ai-meetv2/
 az webapp up --name your-app-name --resource-group your-resource-group
 ```
 
-### Docker Deployment
-
-Create a `Dockerfile`:
-
-```dockerfile
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-WORKDIR /app
-EXPOSE 80
-
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
-COPY ["ai-meetv2.csproj", "./"]
-RUN dotnet restore
-COPY . .
-RUN dotnet build -c Release -o /app/build
-
-FROM build AS publish
-RUN dotnet publish -c Release -o /app/publish
-
-FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "ai-meetv2.dll"]
-```
-
-Build and run:
-```bash
-docker build -t ai-language-tutor .
-docker run -p 8080:80 ai-language-tutor
-```
-
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
@@ -284,10 +257,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## 📝 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 👥 Authors
-
-- **Tahir Khan** - [tahirkhan05](https://github.com/tahirkhan05)
 
 ## 🙏 Acknowledgments
 
