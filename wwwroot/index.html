@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Language Tutor - Premium Video Learning</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <!-- Azure Communication Services Calling SDK -->
+    <script>
+        // Provide stub dependencies for the ACS SDK
+        window.logger = { createClientLogger: () => ({ verbose: ()=>{}, info: ()=>{}, warning: ()=>{}, error: ()=>{} }) };
+        window.communicationCommon = {};
+    </script>
+    <script src="/lib/acs/sdk.bundle.js"></script>
+    <!-- Azure Speech SDK - Use specific version -->
+    <script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@1.35.0/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle.min.js"></script>
+    <!-- Feather Icons for modern UI -->
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container" id="mainContainer">
+        <!-- Modern Top Bar -->
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <rect width="32" height="32" rx="8" fill="url(#gradient)"/>
+                        <path d="M16 8L22 14L16 20L10 14L16 8Z" fill="white"/>
+                        <defs>
+                            <linearGradient id="gradient" x1="0" y1="0" x2="32" y2="32">
+                                <stop offset="0%" stop-color="#667eea"/>
+                                <stop offset="100%" stop-color="#764ba2"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <span class="logo-text">AI Language Tutor</span>
+                </div>
+            </div>
+            <div class="top-bar-center">
+                <span class="session-title" id="sessionTitle">Ready to start learning</span>
+            </div>
+            <div class="top-bar-right header-actions">
+                <button class="icon-btn" id="themeToggle" aria-label="Toggle theme">
+                    <i data-feather="sun"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Left Sidebar - Conversation History -->
+            <aside class="sidebar-left" id="conversationPanel">
+                <div class="sidebar-header">
+                    <h3>
+                        <i data-feather="message-circle"></i>
+                        <span>Conversation</span>
+                    </h3>
+                </div>
+                <div class="chat-history" id="chatHistory">
+                    <div class="welcome-message">
+                        <div class="welcome-icon">💬</div>
+                        <p>Start your conversation to see the chat history here</p>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Center - Video Area -->
+            <main class="video-area">
+                <div class="video-container">
+                    <!-- AI Tutor's video (main) -->
+                    <div class="video-panel tutor-video">
+                        <!-- D-ID Avatar Video -->
+                        <video id="tutorVideo" autoplay playsinline style="display: none; width: 100%; height: 100%; object-fit: cover;"></video>
+                        
+                        <!-- Placeholder Avatar (shown before video loads) -->
+                        <div id="tutorAvatar" class="avatar-container">
+                            <!-- Static avatar image (shown when not playing video) -->
+                            <img id="tutorAvatarImage" 
+                                 src="" 
+                                 alt="AI Tutor Avatar" 
+                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" />
+                            
+                            <!-- Fallback emoji avatar (shown if image fails to load) -->
+                            <div id="tutorAvatarFallback" class="avatar" style="display: none;">
+                                <div class="avatar-circle">
+                                    <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                                        <circle cx="40" cy="40" r="38" stroke="url(#avatarGradient)" stroke-width="4"/>
+                                        <text x="40" y="52" font-size="36" text-anchor="middle" fill="white">👩‍🏫</text>
+                                        <defs>
+                                            <linearGradient id="avatarGradient" x1="0" y1="0" x2="80" y2="80">
+                                                <stop offset="0%" stop-color="#667eea"/>
+                                                <stop offset="100%" stop-color="#764ba2"/>
+                                            </linearGradient>
+                                        </defs>
+                                    </svg>
+                                </div>
+                                <div class="avatar-status">
+                                    <div class="speaking-indicator" id="speakingIndicator"></div>
+                                    <span class="status-text">AI Tutor</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Loading indicator for video generation -->
+                        <div id="tutorLoading" class="tutor-loading" style="display: none;">
+                            <div class="loading-spinner"></div>
+                            <span>Generating avatar response...</span>
+                        </div>
+                    </div>
+
+                    <!-- User's video (picture-in-picture) -->
+                    <div class="video-panel user-video">
+                        <video id="userVideo" autoplay muted playsinline></video>
+                        <div class="video-label">
+                            <i data-feather="video"></i>
+                            <span>You</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Control Bar -->
+                <div class="control-bar">
+                    <div class="control-left">
+                        <div class="language-selector">
+                            <i data-feather="globe"></i>
+                            <select id="targetLanguage">
+                                <option value="en-US">English (US)</option>
+                                <option value="ar-SA">العربية (Arabic)</option>
+                                <option value="te-IN">తెలుగు (Telugu)</option>
+                                <option value="ta-IN">தமிழ் (Tamil)</option>
+                            </select>
+                        </div>
+                        <div class="language-selector" style="margin-left: 8px;">
+                            <i data-feather="user"></i>
+                            <select id="avatarSelector">
+                                <option value="https://i.postimg.cc/8z0mfhXq/image.png">Amber</option>
+                                <option value="https://i.postimg.cc/RFzfwG7c/image.png">Alice</option>
+                                <option value="https://i.postimg.cc/KzvcXMFQ/image-1.png">Diana</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="control-center">
+                        <button class="control-btn icon-control-btn" id="muteBtn" style="display: none;" title="Mute microphone">
+                            <i data-feather="mic"></i>
+                        </button>
+                        <button class="control-btn icon-control-btn" id="cameraBtn" style="display: none;" title="Turn off camera">
+                            <i data-feather="video"></i>
+                        </button>
+                        <button class="control-btn primary-btn" id="startCallBtn">
+                            <i data-feather="video"></i>
+                            <span>Start Conversation</span>
+                        </button>
+                        <button class="control-btn danger-btn" id="endCallBtn" style="display: none;">
+                            <i data-feather="phone-off"></i>
+                            <span>End Conversation</span>
+                        </button>
+                        <div class="mic-indicator" id="micIndicator">
+                            <div class="mic-animation">
+                                <div class="wave"></div>
+                                <div class="wave"></div>
+                                <div class="wave"></div>
+                            </div>
+                            <span>Listening...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="control-right">
+                        <div class="connection-badge" id="connectionStatus">
+                            <span class="status-dot"></span>
+                            <span class="status-text">Ready</span>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Right Sidebar - Live Feedback & Session Summary -->
+            <aside class="sidebar-right" id="feedbackPanel">
+                <!-- Top Section: Live Feedback (60%) -->
+                <div class="feedback-section">
+                    <div class="sidebar-header">
+                        <h3>
+                            <i data-feather="zap"></i>
+                            <span>Live Feedback</span>
+                        </h3>
+                    </div>
+                    <div class="feedback-content" id="feedbackContent">
+                        <div class="feedback-placeholder">
+                            <div class="placeholder-icon">
+                                <i data-feather="mic"></i>
+                            </div>
+                            <p>Real-time pronunciation and grammar feedback will appear here as you speak</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bottom Section: Session Summary (40%) -->
+                <div class="summary-section">
+                    <div class="sidebar-header">
+                        <h3>
+                            <i data-feather="bar-chart"></i>
+                            <span>Session Summary</span>
+                        </h3>
+                    </div>
+                    <div class="summary-content" id="sessionSummaryContent">
+                        <div class="summary-placeholder">
+                            <div class="placeholder-icon">
+                                <i data-feather="activity"></i>
+                            </div>
+                            <p>Your session statistics will appear here during the conversation</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <!-- Progress Indicator -->
+        <div class="progress-toast" id="progressToast">
+            <div class="toast-content">
+                <i data-feather="info"></i>
+                <span id="progressIndicator">Ready to start learning</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Initialize Feather Icons and App -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            feather.replace();
+        });
+    </script>
+    <script src="js/app-sdk.js"></script>
+</body>
+</html>

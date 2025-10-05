@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - AI Language Tutor</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Top Navigation -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <rect width="32" height="32" rx="8" fill="url(#gradient)"/>
+                        <path d="M16 8L22 14L16 20L10 14L16 8Z" fill="white"/>
+                        <defs>
+                            <linearGradient id="gradient" x1="0" y1="0" x2="32" y2="32">
+                                <stop offset="0%" stop-color="#667eea"/>
+                                <stop offset="100%" stop-color="#764ba2"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <span class="logo-text">AI Language Tutor</span>
+                </div>
+            </div>
+            <div class="header-center">
+                <h1>Analytics Dashboard</h1>
+            </div>
+            <div class="header-right">
+                <button class="icon-btn" id="themeToggle" title="Toggle theme">
+                    <i data-feather="sun"></i>
+                </button>
+                <button class="btn btn-primary" id="backToAppBtn">
+                    <i data-feather="arrow-left"></i>
+                    <span>Back to Learning</span>
+                </button>
+                <button class="icon-btn" id="logoutBtn" title="Logout">
+                    <i data-feather="log-out"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Content -->
+        <main class="dashboard-main">
+            <!-- Welcome Section -->
+            <section class="welcome-section">
+                <div class="welcome-content">
+                    <h2>Welcome back, <span id="userName">User</span>! 👋</h2>
+                    <p id="welcomeMessage">Keep up the great work on your language learning journey!</p>
+                </div>
+                <div class="user-badge">
+                    <div class="badge-icon">
+                        <i data-feather="award"></i>
+                    </div>
+                    <div class="badge-info">
+                        <span class="badge-level" id="userLevel">Beginner</span>
+                        <span class="badge-language" id="userLanguage">Learning English</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stats Overview -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <i data-feather="clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalMinutes">0</h3>
+                        <p>Total Minutes</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <i data-feather="message-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalSessions">0</h3>
+                        <p>Total Sessions</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <i data-feather="trending-up"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="avgAccuracy">0%</h3>
+                        <p>Avg Accuracy</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                        <i data-feather="zap"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="currentStreak">0</h3>
+                        <p>Day Streak 🔥</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts-section">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3><i data-feather="bar-chart-2"></i> Progress Over Time</h3>
+                        <select id="progressPeriod" class="chart-select">
+                            <option value="7">Last 7 Days</option>
+                            <option value="30" selected>Last 30 Days</option>
+                            <option value="90">Last 90 Days</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3><i data-feather="pie-chart"></i> Skill Distribution</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="skillsChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Weak Areas & Session History -->
+            <section class="details-section">
+                <div class="details-card">
+                    <div class="details-header">
+                        <h3><i data-feather="alert-triangle"></i> Areas to Improve</h3>
+                    </div>
+                    <div class="weak-areas-list" id="weakAreasList">
+                        <div class="empty-state">
+                            <i data-feather="check-circle"></i>
+                            <p>No weak areas identified yet. Keep practicing!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="details-card">
+                    <div class="details-header">
+                        <h3><i data-feather="list"></i> Recent Sessions</h3>
+                    </div>
+                    <div class="session-history" id="sessionHistory">
+                        <div class="empty-state">
+                            <i data-feather="calendar"></i>
+                            <p>No sessions yet. Start your first conversation!</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Skill Scores -->
+            <section class="skills-section">
+                <div class="skills-card">
+                    <h3><i data-feather="target"></i> Skill Scores</h3>
+                    <div class="skill-bars">
+                        <div class="skill-bar">
+                            <div class="skill-info">
+                                <span class="skill-name">Grammar</span>
+                                <span class="skill-value" id="grammarScore">0%</span>
+                            </div>
+                            <div class="skill-progress">
+                                <div class="skill-fill" id="grammarBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="skill-bar">
+                            <div class="skill-info">
+                                <span class="skill-name">Vocabulary</span>
+                                <span class="skill-value" id="vocabularyScore">0%</span>
+                            </div>
+                            <div class="skill-progress">
+                                <div class="skill-fill" id="vocabularyBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="skill-bar">
+                            <div class="skill-info">
+                                <span class="skill-name">Pronunciation</span>
+                                <span class="skill-value" id="pronunciationScore">0%</span>
+                            </div>
+                            <div class="skill-progress">
+                                <div class="skill-fill" id="pronunciationBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="skill-bar">
+                            <div class="skill-info">
+                                <span class="skill-name">Fluency</span>
+                                <span class="skill-value" id="fluencyScore">0%</span>
+                            </div>
+                            <div class="skill-progress">
+                                <div class="skill-fill" id="fluencyBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="spinner"></div>
+            <p>Loading analytics...</p>
+        </div>
+    </div>
+
+    <script src="js/analytics.js"></script>
+    <script>
+        if (window.feather) feather.replace();
+    </script>
+</body>
+</html>
