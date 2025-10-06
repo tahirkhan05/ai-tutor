@@ -38,17 +38,15 @@ public class SpeechController : ControllerBase
             // Configure to return audio data only, don't play to speakers
             using var synthesizer = new SpeechSynthesizer(config, null);
             
-            // Use SSML for more natural, human-like speech with conversational style
+            // Use SSML for natural speech with optimized settings for speed
             var voiceName = GetVoiceForLanguage(request.Language);
             var ssml = $@"
                 <speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' 
                        xmlns:mstts='https://www.w3.org/2001/mstts' xml:lang='en-US'>
                     <voice name='{voiceName}'>
-                        <mstts:express-as style='friendly' styledegree='1.2'>
-                            <prosody rate='0.95' pitch='+2%'>
-                                {System.Security.SecurityElement.Escape(request.Text)}
-                            </prosody>
-                        </mstts:express-as>
+                        <prosody rate='1.15'>
+                            {System.Security.SecurityElement.Escape(request.Text)}
+                        </prosody>
                     </voice>
                 </speak>";
             
