@@ -555,8 +555,11 @@ class LanguageTutorApp {
 
     async getAIResponse(userMessage) {
         try {
+            const startTotal = performance.now();
+            console.log('⏱️ [TIMING] Starting AI response pipeline...');
             console.log('Calling Gemini API for:', userMessage);
             
+            const startGemini = performance.now();
             const conversationResponse = await fetch('/api/geminichat/conversation', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -567,6 +570,8 @@ class LanguageTutorApp {
                     conversationHistory: this.conversationHistory.slice(-10)
                 })
             });
+            const endGemini = performance.now();
+            console.log(`⏱️ [TIMING] Gemini API call: ${(endGemini - startGemini).toFixed(0)}ms`);
 
             if (conversationResponse.ok) {
                 const data = await conversationResponse.json();
@@ -604,7 +609,13 @@ class LanguageTutorApp {
                 }
 
                 // Speak the response
+                const startSpeak = performance.now();
                 await this.speakText(aiResponse);
+                const endSpeak = performance.now();
+                console.log(`⏱️ [TIMING] Speech generation: ${(endSpeak - startSpeak).toFixed(0)}ms`);
+                
+                const totalTime = performance.now() - startTotal;
+                console.log(`⏱️ [TIMING] ✅ TOTAL PIPELINE: ${totalTime.toFixed(0)}ms`);
             } else {
                 throw new Error('Failed to get AI response');
             }
@@ -716,12 +727,14 @@ class LanguageTutorApp {
 
     async speakWithDID(text) {
         try {
+            const startDID = performance.now();
             console.log('🎬 Creating D-ID video for:', text.substring(0, 50));
             
             // Show loading indicator
             this.showTutorLoading(true);
             
             // Create D-ID talk
+            const startCreate = performance.now();
             const response = await fetch('/api/did/create-talk', {
                 method: 'POST',
                 headers: { 
@@ -734,6 +747,8 @@ class LanguageTutorApp {
                     presenterImageUrl: this.customAvatarUrl // Use custom avatar if set
                 })
             });
+            const endCreate = performance.now();
+            console.log(`⏱️ [D-ID] Create talk API: ${(endCreate - startCreate).toFixed(0)}ms`);
 
             if (!response.ok) {
                 const errorData = await response.json();
@@ -746,7 +761,11 @@ class LanguageTutorApp {
             console.log('✅ D-ID talk created:', this.currentTalkId);
 
             // Poll for video completion
+            const startPoll = performance.now();
             await this.waitForDidVideo(this.currentTalkId);
+            const endPoll = performance.now();
+            console.log(`⏱️ [D-ID] Polling duration: ${(endPoll - startPoll).toFixed(0)}ms`);
+            console.log(`⏱️ [D-ID] ✅ TOTAL D-ID: ${(performance.now() - startDID).toFixed(0)}ms`);
             
         } catch (error) {
             console.error('❌ D-ID video creation failed:', error);
@@ -755,7 +774,10 @@ class LanguageTutorApp {
         }
     }
 
-    async waitForDidVideo(talkId, maxAttempts = 30) {
+    async waitForDidVideo(talkId, maxAttempts = 60) {
+        // Exponential backoff with faster initial checks
+        const delays = [300, 500, 700, 1000]; // Fast initial checks, then 1s
+        
         for (let i = 0; i < maxAttempts; i++) {
             try {
                 const response = await fetch(`/api/did/talk/${talkId}`, {
@@ -777,8 +799,9 @@ class LanguageTutorApp {
                     throw new Error('D-ID video generation failed');
                 }
 
-                // Wait 1 second before next check
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                // Use exponential backoff: faster initial checks (300ms, 500ms, 700ms), then 1s
+                const delay = i < delays.length ? delays[i] : 1000;
+                await new Promise(resolve => setTimeout(resolve, delay));
             } catch (error) {
                 console.error('Error checking D-ID status:', error);
                 throw error;
