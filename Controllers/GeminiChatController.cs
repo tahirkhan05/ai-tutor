@@ -115,8 +115,9 @@ public class GeminiChatController : ControllerBase
             var response = await CallGeminiAPI(apiKey, model, systemPrompt, userPrompt);
             _logger.LogInformation("Gemini API response received: {Response}", response);
 
-            // Analyze for corrections
-            var corrections = await AnalyzeForCorrections(apiKey, model, request.UserMessage, request.TargetLanguage);
+            // Skip separate correction analysis to improve performance
+            // Corrections can be included in the main response if needed
+            var corrections = new List<CorrectionInfo>();
 
             return Ok(new
             {
@@ -207,7 +208,7 @@ Return ONLY a JSON array of corrections in this exact format (return empty array
                     temperature = 0.7,
                     topK = 40,
                     topP = 0.95,
-                    maxOutputTokens = 1024
+                    maxOutputTokens = 200  // Optimized for fast, concise responses
                 }
             };
 
@@ -262,11 +263,13 @@ Return ONLY a JSON array of corrections in this exact format (return empty array
         Guidelines:
         - Keep responses conversational and at appropriate difficulty level
         - Ask engaging questions to keep the conversation flowing
-        - Gently correct mistakes when they occur
+        - If you notice ANY mistake, briefly mention it naturally in your response (e.g., 'By the way, we say X not Y')
         - Provide encouragement and positive reinforcement
         - Use simple, clear language
         - Stay on topic but allow natural conversation flow
-        - Keep responses to 2-3 sentences maximum";
+        - Keep responses to 1-2 SHORT sentences maximum (under 30 words total)
+        - Be concise and direct - avoid lengthy explanations
+        - Corrections should be subtle and encouraging, not disruptive";
     }
 
     private List<string> ExtractCorrections(string feedback)
